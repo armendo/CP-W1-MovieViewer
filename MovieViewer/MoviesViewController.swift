@@ -8,61 +8,117 @@
 
 import UIKit
 import AFNetworking
+import MBProgressHUD
 
 class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-
+    
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var errorView: UIView!
     
     var movies: [NSDictionary]?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        tableView.delegate  =   self
+        errorView.hidden        =   true
+        tableView.delegate      =   self
         tableView.dataSource    =   self
+        loadDataFromNetwork()
         
-        
-        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        // Initialize a UIRefreshControl
+        let refreshControl  =   UIRefreshControl()
+        //Binding refreshControlAction selector to UIRefreshControl so that something when happen when pull to refresh
+        refreshControl.addTarget(
+            self,
+            action: "refreshControlAction:",
+            forControlEvents: UIControlEvents.ValueChanged)
+        //UIRefreshControl adding to the list view
+        //UIRefreshControl is a subclass of the UIVIew.
+        tableView.insertSubview(
+            refreshControl,
+            atIndex: 0)
+    }
+    
+    func refreshControlAction(refreshControl: UIRefreshControl){
+        let apiKey  = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+        let url     = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
         let request = NSURLRequest(
             URL: url!,
-            cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData,
+            cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringCacheData,
             timeoutInterval: 10)
         
         let session = NSURLSession(
             configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
             delegate: nil,
-            delegateQueue: NSOperationQueue.mainQueue()
-        )
+            delegateQueue: NSOperationQueue.mainQueue())
         
         let task: NSURLSessionDataTask = session.dataTaskWithRequest(request,
             completionHandler: { (dataOrNil, response, error) in
                 if let data = dataOrNil {
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
-                            print("response: \(responseDictionary)")
-                            
                             self.movies  =   responseDictionary["results"] as! [NSDictionary]
                             self.tableView.reloadData()
+                            
+                            //Stop spinning refreshControl
+                            refreshControl.endRefreshing()
                     }
                 }
         })
         task.resume()
-
-        // Do any additional setup after loading the view.
+        
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
+    
+    func loadDataFromNetwork(){
+        
+        // ... Create the NSURLRequest (myRequest) ...
+        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+        let url = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let myRequest = NSURLRequest(
+            URL: url!,
+            cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData,
+            timeoutInterval: 10)
+        
+        // Configure session so that completion handler is executed on main UI thread
+        let session = NSURLSession(
+            configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+            delegate:nil,
+            delegateQueue:NSOperationQueue.mainQueue()
+        )
+        
+        // Display HUD right before the request is made
+        MBProgressHUD.showHUDAddedTo(self.view, animated: true)
+        
+        let task : NSURLSessionDataTask = session.dataTaskWithRequest(myRequest,
+            completionHandler: { (data, response, error) in
+                
+                // Hide HUD once the network request comes back (must be done on main UI thread)
+                MBProgressHUD.hideHUDForView(self.view, animated: true)
+                
+                // ... Remainder of response handling code ...
+                if let data = data {
+                    if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
+                        data, options:[]) as? NSDictionary {
+                            self.movies  =   responseDictionary["results"] as! [NSDictionary]
+                            self.tableView.reloadData()
+                    }
+                }
+                
+        });
+        task.resume()
+    }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
         
         if let movies = movies{
+            errorView.hidden    =   true
             return movies.count
         }else{
+            errorView.hidden    =   false
             return 0
         }
     }
@@ -85,15 +141,15 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         cell.titleLabel.text    =   title
         return cell
     }
-
+    
     /*
     // MARK: - Navigation
-
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    // Get the new view controller using segue.destinationViewController.
+    // Pass the selected object to the new view controller.
     }
     */
-
+    
 }
