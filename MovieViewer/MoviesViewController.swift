@@ -23,6 +23,33 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         tableView.dataSource    =   self
         loadDataFromNetwork()
         
+//        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+//        let url = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+//        let request = NSURLRequest(
+//            URL: url!,
+//            cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData,
+//            timeoutInterval: 10)
+//        
+//        let session = NSURLSession(
+//            configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+//            delegate: nil,
+//            delegateQueue: NSOperationQueue.mainQueue()
+//        )
+//        
+//        let task: NSURLSessionDataTask = session.dataTaskWithRequest(request,
+//            completionHandler: { (dataOrNil, response, error) in
+//                if let data = dataOrNil {
+//                    if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
+//                        data, options:[]) as? NSDictionary {
+//                            print("response: \(responseDictionary)")
+//                            
+//                            self.movies  =   responseDictionary["results"] as! [NSDictionary]
+//                            self.tableView.reloadData()
+//                    }
+//                }
+//        })
+//        task.resume()
+
         // Do any additional setup after loading the view.
     }
 
@@ -63,7 +90,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                         data, options:[]) as? NSDictionary {
                             print("response: \(responseDictionary)")
                             
-//                            self.movies  =   responseDictionary["results"] as! [NSDictionary]
+                            self.movies  =   responseDictionary["results"] as! [NSDictionary]
                             self.tableView.reloadData()
                     }
                 }
