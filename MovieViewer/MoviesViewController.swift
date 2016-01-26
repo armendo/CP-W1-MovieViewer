@@ -10,18 +10,20 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class MoviesViewController: UIViewController, UICollectionViewDataSource{
+
     
-    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var errorView: UIView!
     
+    
     var movies: [NSDictionary]?
+    var networkErrorIsHidden       =   true
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        errorView.hidden        =   true
-        tableView.delegate      =   self
-        tableView.dataSource    =   self
+        errorView.hidden            =   true
+        collectionView.dataSource   =   self
         loadDataFromNetwork()
         
         // Initialize a UIRefreshControl
@@ -33,11 +35,17 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             forControlEvents: UIControlEvents.ValueChanged)
         //UIRefreshControl adding to the list view
         //UIRefreshControl is a subclass of the UIVIew.
-        tableView.insertSubview(
+        collectionView.insertSubview(
             refreshControl,
             atIndex: 0)
     }
     
+    @IBAction func networkErrorPressed(sender: UIButton) {
+        if networkErrorIsHidden == false{
+            print("Accesing")
+            loadDataFromNetwork()
+        }
+    }
     func refreshControlAction(refreshControl: UIRefreshControl){
         let apiKey  = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         let url     = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
@@ -57,7 +65,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
                             self.movies  =   responseDictionary["results"] as! [NSDictionary]
-                            self.tableView.reloadData()
+                            self.collectionView.reloadData()
                             
                             //Stop spinning refreshControl
                             refreshControl.endRefreshing()
@@ -104,7 +112,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
                             self.movies  =   responseDictionary["results"] as! [NSDictionary]
-                            self.tableView.reloadData()
+                            self.collectionView.reloadData()
                     }
                 }
                 
@@ -112,35 +120,63 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         task.resume()
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
-        
+    //MARK: - UICollectionViewDataSource protocol methods
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int{
         if let movies = movies{
-            errorView.hidden    =   true
+            errorView.hidden        =   true
+            networkErrorIsHidden   =   true
             return movies.count
         }else{
-            errorView.hidden    =   false
+            errorView.hidden        =   false
+            networkErrorIsHidden    =   false
             return 0
         }
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
-        let cell    =   tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieTableViewCell
+    // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell{
         
+        let cell    =   collectionView.dequeueReusableCellWithReuseIdentifier("movieCell", forIndexPath: indexPath) as! MovieViewCell
         let movie   =   movies![indexPath.row]
-        let title   =   movie["title"] as! String
-        let overview   =   movie["overview"] as! String
-        
+
         let posterPath  = movie["poster_path"] as! String
         let baseUrl = "http://image.tmdb.org/t/p/w342"
         
         let imageUrl    = NSURL(string: baseUrl + posterPath)
         
         cell.movieImage.setImageWithURL(imageUrl!)
-        
-        cell.overviewLabel.text =   overview
-        cell.titleLabel.text    =   title
         return cell
     }
+    
+//    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
+//        
+//        if let movies = movies{
+//            errorView.hidden    =   true
+//            return movies.count
+//        }else{
+//            errorView.hidden    =   false
+//            return 0
+//        }
+//    }
+//    
+//    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
+//        let cell    =   tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieTableViewCell
+//        
+//        let movie   =   movies![indexPath.row]
+//        let title   =   movie["title"] as! String
+//        let overview   =   movie["overview"] as! String
+//        
+//        let posterPath  = movie["poster_path"] as! String
+//        let baseUrl = "http://image.tmdb.org/t/p/w342"
+//        
+//        let imageUrl    = NSURL(string: baseUrl + posterPath)
+//        
+//        cell.movieImage.setImageWithURL(imageUrl!)
+//        
+//        cell.overviewLabel.text =   overview
+//        cell.titleLabel.text    =   title
+//        return cell
+//    }
     
     /*
     // MARK: - Navigation
