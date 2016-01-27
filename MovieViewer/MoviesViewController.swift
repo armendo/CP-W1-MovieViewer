@@ -11,7 +11,7 @@ import AFNetworking
 import MBProgressHUD
 
 class MoviesViewController: UIViewController, UICollectionViewDataSource{
-
+    //Testing
     
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var errorView: UIView!

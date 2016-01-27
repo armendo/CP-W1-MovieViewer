@@ -70,7 +70,7 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstItem="Fg8-s2-be8" firstAttribute="centerY" secondItem="dDh-gb-fhg" secondAttribute="centerY" id="3Io-dc-V59"/>
                                     <constraint firstAttribute="bottom" secondItem="dTh-ju-Ilf" secondAttribute="bottom" id="D8M-lf-7mA"/>
